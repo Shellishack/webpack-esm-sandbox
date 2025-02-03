@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./tailwind.css";
+import CodeEditorView from "./component/code-editor-view";
+import config from "../pulse.config";
+
+export const Config = config;
 
 export default function Main() {
-  return <div className="text-blue-400 pt-20">plugin..</div>;
+  const [test, setTest] = useState("test");
+
+  useEffect(() => {
+    console.log("Extension loaded");
+  }, []);
+  return <CodeEditorView />;
 }
