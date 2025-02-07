@@ -9,6 +9,7 @@ import { convexHull } from "../../lib/canvas/convex-hull";
 import React from "react";
 import { downloadImage } from "../../lib/image-helper";
 import { useOCR } from "@pulse-editor/react-api";
+import { Config } from "../../main";
 
 export default function Canvas({
   editorCanvas,
@@ -36,7 +37,7 @@ export default function Canvas({
 
   const canvasLayer = useRef<Konva.Layer | null>(null);
 
-  const { recognizeText } = useOCR();
+  const { recognizeText } = useOCR(Config.displayName ?? Config.id);
 
   useEffect(() => {
     /* Set dimension */

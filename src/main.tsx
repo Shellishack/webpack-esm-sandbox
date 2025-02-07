@@ -6,10 +6,11 @@ import config from "../pulse.config";
 export const Config = config;
 
 export default function Main() {
-  const [test, setTest] = useState("test");
-
   useEffect(() => {
     console.log("Extension loaded");
+    return () => {
+      console.log("Extension unloaded");
+    };
   }, []);
   return <CodeEditorView />;
 }

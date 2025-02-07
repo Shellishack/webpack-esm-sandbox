@@ -21,6 +21,7 @@ import {
   useTheme,
 } from "@pulse-editor/react-api";
 import { FileViewModel, SelectionInformation } from "@pulse-editor/types";
+import { Config } from "../main";
 
 // interface CodeEditorViewProps {
 //   width?: string;
@@ -167,22 +168,24 @@ import { FileViewModel, SelectionInformation } from "@pulse-editor/types";
 // CodeEditorView.displayName = "CodeEditorView";
 
 export default function CodeEditorView() {
+  const moduleName = Config.displayName ?? Config.id;
+
   /* Set up theme */
   const [theme, setTheme] = useState(vscodeDark);
-  const { theme: pulseTheme } = useTheme();
+  const { theme: pulseTheme } = useTheme(moduleName);
   const cmRef = useRef<ReactCodeMirrorRef>(null);
   /* Set editor content */
   const [viewDocument, setViewDocument] = useState<FileViewModel | undefined>(
     undefined
   );
-  const { runAgentMethod } = useAgent("inline-suggestion");
+  const { runAgentMethod } = useAgent(moduleName, "inline-suggestion");
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   // setup a timer for delayed saving
   const saveTriggerRef = useRef<DelayedTrigger | undefined>(
     new DelayedTrigger(200)
   );
-  const { openNotification } = useNotification();
-  const { viewFile, updateViewFile, setIsLoaded } = useFileView();
+  const { openNotification } = useNotification(moduleName);
+  const { viewFile, updateViewFile, setIsLoaded } = useFileView(moduleName);
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDownloadClip, setIsDownloadClip] = useState(false);
@@ -197,9 +200,7 @@ export default function CodeEditorView() {
       console.log("View file updated", viewFile);
       setIsLoaded(true);
       setViewDocument(viewFile);
-      setCmFileExtension(
-        viewFile ? getLanguageExtension(viewFile.filePath) : undefined
-      );
+      setCmFileExtension(getLanguageExtension(viewFile.filePath));
     }
   }, [viewFile]);
 
@@ -419,7 +420,7 @@ export default function CodeEditorView() {
         cursor: isDrawing && !isCanvasReady ? "wait" : "auto",
       }}
     >
-      {viewDocument?.fileContent !== undefined ? (
+      {
         <ReactCodeMirror
           ref={cmRef}
           value={viewDocument?.fileContent}
@@ -446,9 +447,7 @@ export default function CodeEditorView() {
             height: "100%",
           }}
         />
-      ) : (
-        <p>No content to display. Please select a file to view.</p>
-      )}
+      }
     </div>
   );
 }

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint .",
-    "dev": "cross-env NODE_OPTIONS='--import=tsx' webpack-cli serve --mode development",
+    "dev": "cross-env NODE_OPTIONS='--import=tsx' webpack --mode development && tsx express.ts",
     "build": "cross-env NODE_OPTIONS='--import=tsx' webpack --mode production"
   },
   "dependencies": {
@@ -16,7 +16,8 @@
     "@pulse-editor/types": "file:../pulse-editor/npm-packages/types",
     "@uiw/codemirror-theme-vscode": "^4.23.7",
     "@uiw/react-codemirror": "^4.23.7",
-    "cross-env": "^7.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
     "html2canvas": "^1.4.1",
     "konva": "^9.3.18",
     "react": "^19.0.0-rc-65e06cb7-20241218",
@@ -28,6 +29,7 @@
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "eslint": "^9.18.0",
     "eslint-plugin-react": "^7.37.4",
