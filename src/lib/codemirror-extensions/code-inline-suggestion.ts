@@ -1,4 +1,3 @@
-import { AgentMethodResult } from "@pulse-editor/types";
 import {
   Decoration,
   DecorationSet,
@@ -13,6 +12,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@uiw/react-codemirror";
+import { InlineSuggestionAgentReturns } from "../agents/inline-suggestion-agent";
 
 /* A config facet for various inline suggestion settings */
 const codeInlineSuggestionConfig = Facet.define<
@@ -22,9 +22,9 @@ const codeInlineSuggestionConfig = Facet.define<
       codeContent: string,
       cursorX: number,
       cursorY: number,
-      numberOfSuggestions: number,
+
       abortSignal: AbortSignal
-    ) => Promise<AgentMethodResult>;
+    ) => Promise<InlineSuggestionAgentReturns>;
   },
   {
     delay?: number;
@@ -32,9 +32,8 @@ const codeInlineSuggestionConfig = Facet.define<
       codeContent: string,
       cursorX: number,
       cursorY: number,
-      numberOfSuggestions: number,
       abortSignal: AbortSignal
-    ) => Promise<AgentMethodResult>;
+    ) => Promise<InlineSuggestionAgentReturns>;
   }
 >({
   combine(configs) {
@@ -172,10 +171,11 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         return;
       }
 
-      this.getSuggestion(agentFunc, doc.toString(), cursorX, cursorY, 1, delay)
+      this.getSuggestion(agentFunc, doc.toString(), cursorX, cursorY, delay)
         .then((suggestion) => {
+          console.log("Suggestions", suggestion, typeof suggestion, "Snippet", suggestion.snippet);
           // Dispatch effect to update the StateField
-          const snippet: string = suggestion.data.snippets[0];
+          const snippet: string = suggestion.snippet;
           // Find the intersection of doc and snippet, then trim the snippet.
           const trimmedSnippet = this.trimSnippet(doc.toString(), snippet);
           this.dispatchSuggestion(update.view, trimmedSnippet);
@@ -193,13 +193,11 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         codeContent: string,
         cursorX: number,
         cursorY: number,
-        numberOfSuggestions: number,
         abortSignal: AbortSignal
-      ) => Promise<AgentMethodResult>,
+      ) => Promise<InlineSuggestionAgentReturns>,
       content: string,
       cursorX: number,
       cursorY: number,
-      numberOfSuggestions: number,
       delay?: number
     ) {
       // If there is an ongoing request, abort it.
@@ -221,11 +219,9 @@ const getSuggestionPlugin = ViewPlugin.fromClass(
         content,
         cursorX,
         cursorY,
-        numberOfSuggestions,
         this.abortController.signal
       );
       this.abortController = null;
-      console.log("Suggestion fetched", result);
 
       return result;
     }
@@ -409,9 +405,8 @@ export function codeInlineSuggestionExtension({
     codeContent: string,
     cursorX: number,
     cursorY: number,
-    numberOfSuggestions: number,
     abortSignal: AbortSignal
-  ) => Promise<AgentMethodResult>;
+  ) => Promise<InlineSuggestionAgentReturns>;
 }) {
   const config = codeInlineSuggestionConfig.of({ delay, agentFunc });
   return [

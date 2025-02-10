@@ -20,8 +20,12 @@ import {
   useNotification,
   useTheme,
 } from "@pulse-editor/react-api";
-import { FileViewModel, SelectionInformation } from "@pulse-editor/types";
+import { FileViewModel, TextFileSelection } from "@pulse-editor/types";
 import { Config } from "../main";
+import {
+  InlineSuggestionAgent,
+  InlineSuggestionAgentReturns,
+} from "../lib/agents/inline-suggestion-agent";
 
 // interface CodeEditorViewProps {
 //   width?: string;
@@ -165,8 +169,6 @@ import { Config } from "../main";
 //     // }));
 // );
 
-// CodeEditorView.displayName = "CodeEditorView";
-
 export default function CodeEditorView() {
   const moduleName = Config.displayName ?? Config.id;
 
@@ -178,7 +180,7 @@ export default function CodeEditorView() {
   const [viewDocument, setViewDocument] = useState<FileViewModel | undefined>(
     undefined
   );
-  const { runAgentMethod } = useAgent(moduleName, "inline-suggestion");
+  const { isReady, installAgent, runAgentMethod } = useAgent(moduleName);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   // setup a timer for delayed saving
   const saveTriggerRef = useRef<DelayedTrigger | undefined>(
@@ -194,6 +196,11 @@ export default function CodeEditorView() {
   const [cmFileExtension, setCmFileExtension] = useState<Extension | undefined>(
     undefined
   );
+
+  // try install the inline-suggestion agent
+  useEffect(() => {
+    if (isReady) installAgent(InlineSuggestionAgent);
+  }, [isReady]);
 
   useEffect(() => {
     if (viewFile) {
@@ -286,19 +293,41 @@ export default function CodeEditorView() {
     codeContent: string,
     cursorX: number,
     cursorY: number,
-    numberOfSuggestions: number,
     abortSignal: AbortSignal
   ) {
-    return runAgentMethod(
-      "suggest-inline",
-      JSON.stringify({
-        codeContent,
-        cursorX,
-        cursorY,
-        numberOfSuggestions,
-      }),
-      abortSignal
+    const fileContentWithIndicator = getContentWithIndicator(
+      codeContent,
+      cursorX,
+      cursorY
     );
+    const result = await runAgentMethod(
+      InlineSuggestionAgent.name,
+      "predictLine",
+      { fileContentWithIndicator }
+    );
+
+    const returns = result as InlineSuggestionAgentReturns;
+
+    return returns;
+  }
+
+  function getContentWithIndicator(
+    fileContent: string,
+    cursorX: number,
+    cursorY: number
+  ): string {
+    const lines = fileContent.split("\n");
+    const cursorXNormalized = cursorX - 1;
+    const cursorYNormalized = cursorY - 1;
+
+    // Indicate where the agent should suggest the code at
+    const suggestIndication = "<FILL>";
+    lines[cursorYNormalized] =
+      lines[cursorYNormalized].slice(0, cursorXNormalized) +
+      suggestIndication +
+      lines[cursorYNormalized].slice(cursorXNormalized);
+
+    return lines.join("\n");
   }
 
   function getDrawingLocation(line: DrawnLine): {
@@ -331,6 +360,7 @@ export default function CodeEditorView() {
       lineEnd: lineEnd,
     };
   }
+
   function onContentChange(value: string) {
     setViewDocument((prev) => {
       // Return undefined if viewDocument is not set
@@ -356,6 +386,7 @@ export default function CodeEditorView() {
       return newDoc;
     });
   }
+
   const onTextExtracted = useCallback((line: DrawnLine, text: string) => {
     // Get location information
     const editorContent = cmRef.current?.view?.contentDOM;
@@ -363,7 +394,7 @@ export default function CodeEditorView() {
       throw new Error("Editor content not found");
     }
     const location = getDrawingLocation(line);
-    const newInfo: SelectionInformation = {
+    const newInfo: TextFileSelection = {
       lineStart: location.lineStart,
       lineEnd: location.lineEnd,
       text,
@@ -379,6 +410,7 @@ export default function CodeEditorView() {
       };
     });
   }, []);
+
   function getCanvasDOM(
     offsetX: number,
     editorCanvas: HTMLCanvasElement,
