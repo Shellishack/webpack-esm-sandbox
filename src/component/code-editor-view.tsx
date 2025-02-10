@@ -303,7 +303,8 @@ export default function CodeEditorView() {
     const result = await runAgentMethod(
       InlineSuggestionAgent.name,
       "predictLine",
-      { fileContentWithIndicator }
+      { fileContentWithIndicator },
+      abortSignal
     );
 
     const returns = result as InlineSuggestionAgentReturns;
