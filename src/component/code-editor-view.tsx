@@ -187,7 +187,7 @@ export default function CodeEditorView() {
     new DelayedTrigger(200)
   );
   const { openNotification } = useNotification(moduleName);
-  const { viewFile, updateViewFile, setIsLoaded } = useFileView(moduleName);
+  const { viewFile, updateViewFile , setIsLoaded} = useFileView(moduleName);
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDownloadClip, setIsDownloadClip] = useState(false);

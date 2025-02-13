@@ -2,7 +2,8 @@ import { Agent } from "@pulse-editor/types";
 
 export const InlineSuggestionAgent: Agent = {
   name: "inline-suggestion",
-  version: "0.0.1",
+  version: "v0.0.1",
+  description:"Inline Suggestion agent provides code completion snippets for coding tasks.",
   systemPrompt: `You are a helpful code copilot who helps a software developer to code. \
 You will fill in the middle of the code where "<FILL>" is indicated. `,
   LLMConfig: {
