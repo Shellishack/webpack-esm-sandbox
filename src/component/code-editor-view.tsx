@@ -15,7 +15,7 @@ import { getLanguageExtension } from "../lib/codemirror-extensions/get-language-
 import { DelayedTrigger } from "../lib/delayed-trigger";
 
 import {
-  useAgent,
+  useAgents,
   useFileView,
   useNotification,
   useTheme,
@@ -180,7 +180,7 @@ export default function CodeEditorView() {
   const [viewDocument, setViewDocument] = useState<FileViewModel | undefined>(
     undefined
   );
-  const { isReady, installAgent, runAgentMethod } = useAgent(moduleName);
+  const { isReady, installAgent, runAgentMethod } = useAgents(moduleName);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   // setup a timer for delayed saving
   const saveTriggerRef = useRef<DelayedTrigger | undefined>(
